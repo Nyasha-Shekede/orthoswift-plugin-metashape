@@ -14,7 +14,7 @@ def main():
         exec(version_file.read_text(encoding="utf-8"), version_vars)
     version = version_vars.get("__version__", "1.0.0")
 
-    zip_name = f"orthoswift-metashape-v{version}.zip"
+    zip_name = f"orthoswift-metashape-plugin-v{version}.zip"
     zip_path = dist_dir / zip_name
 
     root_files = [
@@ -58,10 +58,10 @@ def main():
     sha_file.write_text(f"{sha256}  {zip_name}\n", encoding="utf-8")
 
     # Also create unversioned bundle for convenience (matches CI artifact name)
-    generic_zip = dist_dir / "orthoswift-metashape.zip"
+    generic_zip = dist_dir / "orthoswift-metashape-plugin.zip"
     generic_zip.write_bytes(zip_path.read_bytes())
-    generic_sha = dist_dir / "orthoswift-metashape.zip.sha256"
-    generic_sha.write_text(f"{sha256}  orthoswift-metashape.zip\n", encoding="utf-8")
+    generic_sha = dist_dir / "orthoswift-metashape-plugin.zip.sha256"
+    generic_sha.write_text(f"{sha256}  orthoswift-metashape-plugin.zip\n", encoding="utf-8")
 
     size_kb = zip_path.stat().st_size / 1024
 

@@ -37,3 +37,15 @@ def test_required_assets_and_files_exist():
     ]
     for rf in required_files:
         assert (root / rf).exists(), f"Missing required file: {rf}"
+
+
+def test_build_release_package_naming():
+    root = Path(__file__).parents[1]
+    build_text = (root / "build_release.py").read_text(encoding="utf-8")
+    assert "orthoswift-metashape-plugin-v" in build_text
+    assert "orthoswift-metashape-plugin.zip" in build_text
+
+    workflow_text = (root / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+    assert "orthoswift-metashape-plugin-v" in workflow_text
+    assert "orthoswift-metashape-plugin.zip" in workflow_text
+

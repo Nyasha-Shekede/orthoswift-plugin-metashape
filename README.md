@@ -162,7 +162,7 @@ MIT License. See `LICENSE`.
 
 ## Support
 
-- Issues: https://github.com/Nyasha-Shekede/orthoswift-plugin-webodm/issues
+- Issues: https://github.com/Nyasha-Shekede/orthoswift-plugin-metashape/issues
 - Website & Documentation: https://orthoswift.net
 
 ## Version

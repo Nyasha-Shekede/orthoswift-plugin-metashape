@@ -38,8 +38,8 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://orthoswift.net"
-Repository = "https://github.com/Nyasha-Shekede/orthoswift-plugin-webodm"
-Issues = "https://github.com/Nyasha-Shekede/orthoswift-plugin-webodm/issues"
+Repository = "https://github.com/Nyasha-Shekede/orthoswift-plugin-metashape"
+Issues = "https://github.com/Nyasha-Shekede/orthoswift-plugin-metashape/issues"
 
 [tool.setuptools]
 packages = ["orthoswift", "orthoswift.core"]
