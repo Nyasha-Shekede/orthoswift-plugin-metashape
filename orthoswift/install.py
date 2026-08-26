@@ -1,6 +1,6 @@
 """One-command per-user installer for the OrthoSWIFT Metashape adapter."""
 from __future__ import annotations
-import argparse, json, os, platform, shutil, subprocess, sys
+import argparse, json, os, platform, subprocess, sys
 from pathlib import Path
 
 HERE=Path(__file__).resolve().parent
