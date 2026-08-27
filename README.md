@@ -127,6 +127,7 @@ Depending on the available spectral bands and quality-control gates, the results
 | **Stress Hotspot Map** | GeoJSON + KML + CSV | Pinpoints lowest-performing field zones for targeted ground scouting and validation. |
 | **Field Health Summary** | PDF + PNG map | Ready-to-share agronomic report combining zone maps, canopy cover statistics, and scouting targets. |
 | **Technical GIS & Audit** | GeoTIFF + CSV + JSON | Analytical vegetation indices (NDVI, NDRE, GLI, MSAVI2), crop mask QC, methodology audits, and warnings. |
+| **Universal Export** | DJI Agras, XAG, John Deere, Case IH, Trimble & more | Export to major spray drone and tractor formats per job. |
 
 DJI Agras and XAG exports are structural/research-stage formats and require equipment profile verification prior to field application.
 

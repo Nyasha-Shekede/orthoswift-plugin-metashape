@@ -455,11 +455,12 @@ class OrthoSwiftRunDialog(QtWidgets.QDialog):
 
         # ── Deliverables Table ──
         deliverables = [
-            ("Fertilizer Zone Map", "Shapefile + controller packages (with offline MBTiles basemap)", "Drives variable-rate fertilizer spreaders. Includes full-resolution offline orthomosaic background map for your tractor or drone display."),
-            ("Targeted Spray Map", "Shapefile + controller packages (with offline MBTiles basemap)", "Triggers spray nozzles over stressed crop patches. Includes full-resolution offline orthomosaic background map for your tractor or drone display."),
+            ("Fertilizer Zone Map", "Shapefile + controller packages (with offline MBTiles basemap)", "Splits your field into zones so weak areas get more fertilizer, strong areas get less. Includes full-resolution offline orthomosaic background map for your tractor or drone display."),
+            ("Targeted Spray Map", "Shapefile + controller packages (with offline MBTiles basemap)", "Marks stressed patches so your sprayer only fires where it needs to. Includes full-resolution offline orthomosaic background map for your tractor or drone display."),
             ("Stress Hotspot Map", "GeoJSON + KML + CSV", "Pinpoints lowest-performing field zones for targeted ground scouting."),
             ("Field Health Summary", "PDF + PNG map", "Ready-to-share report combining zone maps, cover stats, and scouting targets."),
             ("Technical GIS & Audit Data", "GeoTIFF + CSV + JSON", "Raw spectral health layers (NDVI/NDRE/MSAVI2), per-zone statistics, and audit log."),
+            ("Universal Export", "DJI Agras, XAG, John Deere, Case IH, Trimble & more", "Export to major spray drone and tractor formats per job."),
         ]
 
         table = QtWidgets.QTableWidget(len(deliverables), 3)
@@ -478,7 +479,7 @@ class OrthoSwiftRunDialog(QtWidgets.QDialog):
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
         table.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         table.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
-        table.setMinimumHeight(240)
+        table.setMinimumHeight(275)
 
         green_color = QtGui.QColor("#4ade80")
         for row, (name, fmt, desc) in enumerate(deliverables):
@@ -573,7 +574,7 @@ class OrthoSwiftRunDialog(QtWidgets.QDialog):
             ("Orthomosaic Merging", "Merge overlapping orthomosaics from multiple flights or sensors automatically."),
             ("Drone Swarm Support", "Splits prescription packages into zones for swarm workflows."),
             ("Batch Field Processing", "Process multiple separate fields independently in a single job."),
-            ("Fully Automated Pipeline", "Zero manual GIS work, with most jobs completing in under 1 hour."),
+            ("Fast turnaround", "Most jobs complete in under 1 hour."),
         ]
 
         for title, desc in features:
