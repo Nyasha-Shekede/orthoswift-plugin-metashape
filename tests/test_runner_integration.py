@@ -70,7 +70,7 @@ def test_full_runner_outputs_all_visible_deliverables(tmp_path):
         controller_archives = {
             Path(name).name
             for name in names
-            if "controller_packages/" in name and name.endswith(".zip")
+            if "prescriptions/" in name and name.endswith(".zip")
         }
         assert controller_archives == {"dji_agras.zip"}
     exported_zip_keys = {key for key in out if key.endswith("_zip")}

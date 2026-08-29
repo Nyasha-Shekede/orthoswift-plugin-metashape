@@ -127,7 +127,7 @@ Depending on the available spectral bands and quality-control gates, the results
 | **Stress Hotspot Map** | GeoJSON + KML + CSV | Pinpoints lowest-performing field zones for targeted ground scouting and validation. |
 | **Spray Report** | PDF + PNG map | Ready-to-share spray report with zone maps, tank-mix quantities, and scouting targets. |
 | **Technical GIS & Audit** | GeoTIFF + CSV + JSON | Analytical vegetation indices (NDVI, NDRE, GLI, MSAVI2), crop mask QC, methodology audits, and warnings. |
-| **DJI Agras Export** | DJI boundary shapefile + rate GeoTIFF | Creates the DJI-folder prescription package used by this plugin. |
+| **DJI Agras Export** | DJI Agras prescription ZIP | Ready-to-load prescription packages formatted specifically for DJI Agras spray drones. |
 
 DJI Agras exports are structural and require equipment and firmware verification before field application.
 
