@@ -458,7 +458,7 @@ class OrthoSwiftRunDialog(QtWidgets.QDialog):
             ("Fertilizer Zone Map", "Shapefile + controller packages (with offline MBTiles basemap)", "Splits your field into zones so weak areas get more fertilizer, strong areas get less. Includes full-resolution offline orthomosaic background map for your tractor or drone display."),
             ("Targeted Spray Map", "Shapefile + controller packages (with offline MBTiles basemap)", "Marks stressed patches so your sprayer only fires where it needs to. Includes full-resolution offline orthomosaic background map for your tractor or drone display."),
             ("Stress Hotspot Map", "GeoJSON + KML + CSV", "Pinpoints lowest-performing field zones for targeted ground scouting."),
-            ("Field Health Summary", "PDF + PNG map", "Ready-to-share report combining zone maps, cover stats, and scouting targets."),
+            ("Spray Report", "PDF + PNG map", "Ready-to-share spray report with zone maps, tank-mix quantities, and scouting targets."),
             ("Technical GIS & Audit Data", "GeoTIFF + CSV + JSON", "Raw spectral health layers (NDVI/NDRE/MSAVI2), per-zone statistics, and audit log."),
             ("Universal Export", "DJI Agras, XAG, John Deere, Case IH, Trimble & more", "Export to major spray drone and tractor formats per job."),
         ]

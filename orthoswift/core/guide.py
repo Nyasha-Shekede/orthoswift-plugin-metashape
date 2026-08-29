@@ -28,13 +28,13 @@ for libname in ['reportlab', 'markdown2', 'PIL', 'urllib3']:
 _FIELD_ACTION_GUIDE_SOURCE = """\
 # Setup Guide
 
-Your field analysis is complete. Read `health_report.pdf` first, then use this guide to load prescriptions onto your machines.
+Your field analysis is complete. Read `spray_report.pdf` first, then use this guide to load prescriptions onto your machines.
 
 ## What's in This Package
 
 | File / Folder | What it is |
 |---|---|
-| `health_report.pdf` | Crop health summary — start here |
+| `spray_report.pdf` | Spray report & tank-mix summary — start here |
 | `prescriptions/fertilizer_zones/fertilizer_zones.kml` | Variable-rate management zones — open in Google Earth to review before applying |
 | `prescriptions/fertilizer_zones/controller_packages/` | Brand ZIPs ready to extract to USB (single machine) |
 | `prescriptions/fertilizer_zones/fleet_machines/` | Per-machine swarm VRA packages + color-coded zone KML (present when fleet is configured) |
@@ -389,12 +389,5 @@ def generate_guide_pdf(out_path: str | Path, *, domain: str) -> Optional[Path]:
 
 
 def export_guides(out_dir: str | Path) -> tuple[Optional[Path], Optional[Path]]:
-    """Generate setup_guide.pdf at the deliverables root."""
-    out_dir = Path(out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    field_action_pdf = None
-    try:
-        field_action_pdf = generate_guide_pdf(out_dir / "setup_guide.pdf", domain="field_action")
-    except Exception as exc:
-        logger.error(f"[guide] export_guides field_action PDF failed: {exc}", exc_info=True)
-    return field_action_pdf, None
+    """Machine setup reference is now embedded directly in the official report."""
+    return None, None

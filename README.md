@@ -125,7 +125,7 @@ Depending on the available spectral bands and quality-control gates, the results
 | **Fertilizer Zone Map** | Shapefile + Controller ZIPs (with offline MBTiles) | Drives variable-rate spreaders and sprayers (John Deere, Case IH, Trimble, Ag Leader, New Holland, DJI Agras, XAG). Includes full-resolution offline MBTiles basemap. |
 | **Targeted Spray Map** | Shapefile + Controller ZIPs (with offline MBTiles) | Triggers sprayer sections or drones over detected weed/stress patches. |
 | **Stress Hotspot Map** | GeoJSON + KML + CSV | Pinpoints lowest-performing field zones for targeted ground scouting and validation. |
-| **Field Health Summary** | PDF + PNG map | Ready-to-share agronomic report combining zone maps, canopy cover statistics, and scouting targets. |
+| **Spray Report** | PDF + PNG map | Ready-to-share spray report with zone maps, tank-mix quantities, and scouting targets. |
 | **Technical GIS & Audit** | GeoTIFF + CSV + JSON | Analytical vegetation indices (NDVI, NDRE, GLI, MSAVI2), crop mask QC, methodology audits, and warnings. |
 | **Universal Export** | DJI Agras, XAG, John Deere, Case IH, Trimble & more | Export to major spray drone and tractor formats per job. |
 
