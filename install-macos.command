@@ -7,11 +7,16 @@ fi
 
 for PY in python3.12 python3.11 python3.10; do
   if command -v "$PY" >/dev/null 2>&1; then
-    "$PY" "$SCRIPT"
-    echo ""
-    echo "Installation complete. Press any key to close..."
+    if "$PY" "$SCRIPT"; then
+      echo ""
+      echo "Installation complete. Press any key to close..."
+      read -n 1 -s -r
+      exit 0
+    fi
+    status=$?
+    echo "Installation failed. Press any key to close..." >&2
     read -n 1 -s -r
-    exit 0
+    exit "$status"
   fi
 done
 echo "OrthoSWIFT requires 64-bit Python 3.10, 3.11, or 3.12." >&2

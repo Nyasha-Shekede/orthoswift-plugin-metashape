@@ -1,7 +1,13 @@
 """OrthoSWIFT menu adapter for Agisoft Metashape Professional 2.2+."""
 from __future__ import annotations
-import json, os, shutil, sys, traceback
+
+import json
+import os
+import shutil
+import sys
+import traceback
 from pathlib import Path
+
 import Metashape
 from PySide2 import QtCore, QtGui, QtWidgets
 
@@ -15,18 +21,14 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 try:
+    from .version import __version__ as PLUGIN_VERSION
+except ImportError:
     from version import __version__ as PLUGIN_VERSION
-except Exception:
-    try:
-        from .version import __version__ as PLUGIN_VERSION
-    except Exception:
-        PLUGIN_VERSION = "1.0.0"
 
 MINIMUM_METASHAPE_MAJOR_MINOR = (2, 2)
 
 _processes = set()
 
-# ── Load Bundled Fonts into Qt Engine (Offline 1:1 Rendering) ───────────────
 _font_ids = []
 if FONTS_DIR.is_dir():
     for _font_file in FONTS_DIR.glob("*.ttf"):
@@ -34,7 +36,6 @@ if FONTS_DIR.is_dir():
         if _fid != -1:
             _font_ids.append(_fid)
 
-# ── Brand QSS (Grey & White Theme matching WebODM & orthoswift.net) ─────────
 OSW_QSS = """
 QWidget {
     background-color: #5a5a5a;
@@ -315,7 +316,6 @@ def _success_card(archive: Path, out: Path):
     root.setContentsMargins(28, 24, 28, 20)
     root.setSpacing(18)
 
-    # ── Header ──────────────────────────────────────────────────────────────
     header = QtWidgets.QLabel(
         "<span style='font-size:22px;font-weight:900;color:#4ade80;'>&#10003;</span>"
         "&nbsp;&nbsp;<span style='font-size:17px;font-weight:800;color:#ffffff;'>"
@@ -324,13 +324,11 @@ def _success_card(archive: Path, out: Path):
     header.setStyleSheet("background:transparent;border:none;")
     root.addWidget(header)
 
-    # ── Divider ──────────────────────────────────────────────────────────────
     line = QtWidgets.QFrame()
     line.setFrameShape(QtWidgets.QFrame.HLine)
     line.setStyleSheet("color:rgba(255,255,255,0.15);background:rgba(255,255,255,0.15);border:none;max-height:1px;")
     root.addWidget(line)
 
-    # ── Path info card ───────────────────────────────────────────────────────
     card = QtWidgets.QFrame()
     card.setObjectName("success_path_card")
     card.setStyleSheet("""
@@ -371,7 +369,6 @@ def _success_card(archive: Path, out: Path):
     card_layout.addLayout(_path_row("DIR", "Results Folder", str(out)))
     root.addWidget(card)
 
-    # ── Buttons ──────────────────────────────────────────────────────────────
     btn_row = QtWidgets.QHBoxLayout()
     btn_row.setSpacing(10)
     btn_row.addStretch()
@@ -397,7 +394,7 @@ def _python():
     if CONFIG.is_file():
         try:
             configured = json.loads(CONFIG.read_text(encoding="utf-8")).get("python") or configured
-        except Exception as exc:
+        except (OSError, json.JSONDecodeError, AttributeError) as exc:
             print(f"OrthoSWIFT warning: ignored invalid configuration {CONFIG}: {exc}")
     for candidate in (configured, shutil.which("python3"), shutil.which("python")):
         if candidate and Path(candidate).is_file():
@@ -438,7 +435,6 @@ class OrthoSwiftRunDialog(QtWidgets.QDialog):
         layout.setContentsMargins(32, 32, 32, 32)
         layout.setSpacing(20)
 
-        # ── Hero Header ──
         hero_title = QtWidgets.QLabel("OrthoSWIFT")
         hero_title.setObjectName("hero_title")
         title_font = QtGui.QFont()
@@ -453,14 +449,13 @@ class OrthoSwiftRunDialog(QtWidgets.QDialog):
         layout.addWidget(hero_title)
         layout.addWidget(hero_sub)
 
-        # ── Deliverables Table ──
         deliverables = [
             ("Fertilizer Zone Map", "Shapefile + controller packages (with offline MBTiles basemap)", "Splits your field into zones so weak areas get more fertilizer, strong areas get less. Includes full-resolution offline orthomosaic background map for your tractor or drone display."),
             ("Targeted Spray Map", "Shapefile + controller packages (with offline MBTiles basemap)", "Marks stressed patches so your sprayer only fires where it needs to. Includes full-resolution offline orthomosaic background map for your tractor or drone display."),
             ("Stress Hotspot Map", "GeoJSON + KML + CSV", "Pinpoints lowest-performing field zones for targeted ground scouting."),
-            ("Spray Report", "PDF + PNG map", "Ready-to-share spray report with zone maps, tank-mix quantities, and scouting targets."),
+            ("Field Health Summary", "PDF + PNG map", "Ready-to-share report combining zone maps, cover stats, and scouting targets."),
             ("Technical GIS & Audit Data", "GeoTIFF + CSV + JSON", "Raw spectral health layers (NDVI/NDRE/MSAVI2), per-zone statistics, and audit log."),
-            ("Universal Export", "DJI Agras, XAG, John Deere, Case IH, Trimble & more", "Export to major spray drone and tractor formats per job."),
+            ("DJI Agras Export", "DJI boundary shapefile + rate GeoTIFF", "Create DJI Agras fertilizer and spot-spray prescription packages."),
         ]
 
         table = QtWidgets.QTableWidget(len(deliverables), 3)
@@ -501,7 +496,6 @@ class OrthoSwiftRunDialog(QtWidgets.QDialog):
 
         layout.addWidget(table)
 
-        # ── Teams Section Collapsible Accordion (Matching WebODM) ──
         teams_wrapper = QtWidgets.QWidget()
         teams_wrapper.setObjectName("teams_wrapper")
         teams_wrapper.setMaximumWidth(800)
@@ -623,7 +617,6 @@ class OrthoSwiftRunDialog(QtWidgets.QDialog):
         teams_wrap_layout.addWidget(self.teams_box)
         layout.addWidget(teams_wrapper)
 
-        # ── Fertilizer Rate Plan ─────────────────────────────────────────────
         rate_card = QtWidgets.QFrame()
         rate_card.setStyleSheet("QFrame{background-color:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.25);border-radius:10px;}")
         rate_card_layout = QtWidgets.QVBoxLayout(rate_card)
@@ -724,7 +717,7 @@ class OrthoSwiftRunDialog(QtWidgets.QDialog):
         rf.addWidget(ab_label)
         rf.addWidget(self._approved_by)
 
-        hint = QtWidgets.QLabel("OrthoSWIFT encodes these physical rates into controller shapefiles (including John Deere kg_p_ha / l_p_ha columns) and the PDF action report.")
+        hint = QtWidgets.QLabel("OrthoSWIFT encodes these physical rates into the DJI Agras rate raster and the PDF action report.")
         hint.setStyleSheet("font-size:10px;color:rgba(255,255,255,0.5);border:none;background:transparent;")
         hint.setWordWrap(True)
         rf.addWidget(hint)
@@ -733,7 +726,6 @@ class OrthoSwiftRunDialog(QtWidgets.QDialog):
         self._rate_fields_widget.setVisible(False)
         layout.addWidget(rate_card)
 
-        # ── Spot Spraying Target Rate ────────────────────────────────────────
         spot_rate_card = QtWidgets.QFrame()
         spot_rate_card.setStyleSheet("QFrame{background-color:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.25);border-radius:10px;}")
         spot_card_layout = QtWidgets.QVBoxLayout(spot_rate_card)
@@ -800,7 +792,7 @@ class OrthoSwiftRunDialog(QtWidgets.QDialog):
         srf.addWidget(sab_label)
         srf.addWidget(self._spot_approved_by)
 
-        spot_hint = QtWidgets.QLabel("OrthoSWIFT encodes these physical rates into targeted spot-spraying controller packages (such as DJI Agras/XAG/universal) for section control.")
+        spot_hint = QtWidgets.QLabel("OrthoSWIFT encodes these physical rates into a targeted DJI Agras spot-spray package for section control.")
         spot_hint.setStyleSheet("font-size:10px;color:rgba(255,255,255,0.5);border:none;background:transparent;")
         spot_hint.setWordWrap(True)
         srf.addWidget(spot_hint)
@@ -809,7 +801,6 @@ class OrthoSwiftRunDialog(QtWidgets.QDialog):
         self._spot_rate_fields_widget.setVisible(False)
         layout.addWidget(spot_rate_card)
 
-        # ── Analysis Form (Multispectral Orthomosaic File Selection) ──
         form_title = QtWidgets.QLabel("<h2 style='font-size:16px;font-weight:700;color:#ffffff;margin:16px 0 4px 0;'>Select multispectral orthomosaic</h2>")
         layout.addWidget(form_title)
 
@@ -857,7 +848,6 @@ class OrthoSwiftRunDialog(QtWidgets.QDialog):
         subtext = QtWidgets.QLabel("<span style='font-size:11px;color:rgba(255,255,255,0.7);'>Select an orthomosaic GeoTIFF (.tif) directly from your computer, or leave default for active chunk.</span>")
         layout.addWidget(subtext)
 
-        # ── Action Buttons (Matching WebODM Green CTA) ──
         btn_layout = QtWidgets.QHBoxLayout()
         btn_layout.setSpacing(16)
 
@@ -1045,7 +1035,6 @@ def _start_runner(cfg_path: Path, out: Path, log: Path):
     env.insert("PYTHONUNBUFFERED", "1")
     process.setProcessEnvironment(env)
 
-    # ── Open the log file BEFORE defining closures that reference it ──────────
     log_file = open(log, "w", encoding="utf-8")
 
     progress = QtWidgets.QProgressDialog(
@@ -1061,7 +1050,6 @@ def _start_runner(cfg_path: Path, out: Path, log: Path):
     progress.setValue(0)
     progress.canceled.connect(process.kill)
 
-    # ── Heartbeat: animated dots + event pump so dialog stays alive ───────────
     _state = {"label": "Initialising OrthoSWIFT", "dots": 0}
 
     heartbeat = QtCore.QTimer()
@@ -1087,8 +1075,8 @@ def _start_runner(cfg_path: Path, out: Path, log: Path):
         try:
             log_file.write(data)
             log_file.flush()
-        except Exception:
-            pass
+        except (OSError, ValueError) as exc:
+            print(f"OrthoSWIFT log write failed: {exc}", file=sys.stderr)
         print(data, end="", flush=True)
         for line in data.splitlines():
             if "[PROGRESS " in line and "%]" in line:
@@ -1102,8 +1090,8 @@ def _start_runner(cfg_path: Path, out: Path, log: Path):
                     progress.setValue(pct)
                     progress.setLabelText(f"{msg} · {pct}%")
                     QtWidgets.QApplication.processEvents()
-                except Exception:
-                    pass
+                except (ValueError, IndexError):
+                    continue
 
     def _read_stderr():
         data = process.readAllStandardError().data().decode("utf-8", errors="replace")
@@ -1112,8 +1100,8 @@ def _start_runner(cfg_path: Path, out: Path, log: Path):
         try:
             log_file.write(data)
             log_file.flush()
-        except Exception:
-            pass
+        except (OSError, ValueError) as exc:
+            print(f"OrthoSWIFT log write failed: {exc}", file=sys.stderr)
         print(data, end="", flush=True)
         QtWidgets.QApplication.processEvents()
 
@@ -1124,10 +1112,8 @@ def _start_runner(cfg_path: Path, out: Path, log: Path):
         heartbeat.stop()
         _read_stdout()
         _read_stderr()
-        try:
+        if not log_file.closed:
             log_file.close()
-        except Exception:
-            pass
         progress.close()
         _processes.discard(process)
         archive = out.parent / "orthoswift-deliverables.zip"
@@ -1148,10 +1134,8 @@ def _start_runner(cfg_path: Path, out: Path, log: Path):
     process.start(_python(), [str(RUNNER), str(cfg_path)])
     if not process.waitForStarted(5000):
         heartbeat.stop()
-        try:
+        if not log_file.closed:
             log_file.close()
-        except Exception:
-            pass
         progress.close()
         _processes.discard(process)
         raise RuntimeError(f"Could not start OrthoSWIFT Python. See {log}")

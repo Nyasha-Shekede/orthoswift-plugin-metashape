@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import pytest
 
 from orthoswift.install import target_script_dirs

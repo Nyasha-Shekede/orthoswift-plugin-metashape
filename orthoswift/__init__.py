@@ -1,7 +1,19 @@
-"""OrthoSWIFT Metashape Plugin - Agisoft Metashape Professional Integration"""
+"""OrthoSWIFT adapter for Agisoft Metashape Professional."""
+
 from .version import __version__
-from .runner import run
-from .core.pipeline import run_agriculture_pipeline
 
 __author__ = "OrthoSWIFT"
-__all__ = ["metashape", "run", "run_agriculture_pipeline", "__version__"]
+__all__ = ["__version__", "run", "run_agriculture_pipeline"]
+
+
+def __getattr__(name: str):
+    """Load the geospatial runtime only when an API entry point is requested."""
+    if name == "run":
+        from .runner import run
+
+        return run
+    if name == "run_agriculture_pipeline":
+        from .core.pipeline import run_agriculture_pipeline
+
+        return run_agriculture_pipeline
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

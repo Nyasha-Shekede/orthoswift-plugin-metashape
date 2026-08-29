@@ -10,20 +10,14 @@ generation, which is already installed on all OrthoSWIFT worker environments.
 """
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Optional
-import logging
 
 logger = logging.getLogger(__name__)
 
-# Suppress third-party library logging noise
-for libname in ['reportlab', 'markdown2', 'PIL', 'urllib3']:
-    logging.getLogger(libname).setLevel(logging.CRITICAL)
 
-
-# ---------------------------------------------------------------------------
 # Guide content — embedded at development time from the repo-root .md files
-# ---------------------------------------------------------------------------
 
 _FIELD_ACTION_GUIDE_SOURCE = """\
 # Setup Guide
@@ -34,49 +28,22 @@ Your field analysis is complete. Read `spray_report.pdf` first, then use this gu
 
 | File / Folder | What it is |
 |---|---|
-| `spray_report.pdf` | Spray report & tank-mix summary — start here |
+| `spray_report.pdf` | Spray report & prescription package summary — start here |
 | `prescriptions/fertilizer_zones/fertilizer_zones.kml` | Variable-rate management zones — open in Google Earth to review before applying |
-| `prescriptions/fertilizer_zones/controller_packages/` | Brand ZIPs ready to extract to USB (single machine) |
-| `prescriptions/fertilizer_zones/fleet_machines/` | Per-machine swarm VRA packages + color-coded zone KML (present when fleet is configured) |
+| `prescriptions/fertilizer_zones/controller_packages/dji_agras.zip` | DJI Agras fertilizer prescription package |
 | `prescriptions/spray_targets/stress_patches.kml` | Spot-spray stress targets — red = severe, yellow = mild |
-| `prescriptions/spray_targets/controller_packages/` | Brand ZIPs for spot-spraying (single machine) |
-| `prescriptions/spray_targets/fleet_machines/` | Per-machine swarm spot-spray packages + color-coded zone KML (present when fleet is configured) |
-| `technical_gis/fleet/fleet_manifest.json` | Machine-readable manifest: zone IDs, swath widths, assigned packages |
-| `technical_gis/fleet/fleet_partition_boundaries.geojson` | Partition geometry for GIS / QGIS review |
+| `prescriptions/spray_targets/controller_packages/dji_agras.zip` | DJI Agras spot-spray prescription package |
 | `technical_gis/rasters/` | GeoTIFF spectral layers (NDVI, NDRE, etc.) for GIS review |
 | `technical_gis/data_summaries/` | Zone statistics and canopy cover CSV exports |
 
 ## Loading Prescriptions (Single Machine)
 
 1. Open the `.kml` in Google Earth — confirm zones look correct before applying.
-2. Open `controller_packages/` in the relevant prescription folder.
-3. Extract **your brand ZIP** to the root of your USB drive.
-4. Insert USB into the display and import the prescription. If a physical rate plan was supplied, verify the encoded rate column and units; otherwise map the relative `TargetRate` values to approved physical rates.
+2. Open `controller_packages/dji_agras.zip` in the relevant prescription folder.
+3. Extract it so the `DJI/` folder is at the USB root.
+4. Import the prescription in the DJI Agras workflow and verify the rate raster, units, boundary, and controller preview before application.
 
-| Display / System | ZIP file | USB destination |
-|---|---|---|
-| John Deere GS3 / Gen 4 / G5 | `john_deere.zip` | `USB:/Rx/` |
-| Case IH Pro 700 / 1200 | `case_ih.zip` | `USB:/Shapefile/` |
-| New Holland IntelliView | `new_holland.zip` | `USB:/Shapefile/` |
-| Trimble AgGPS / FMX / CFX | `trimble_aggps.zip` | `USB:/AgGPS/Prescriptions/` |
-| Trimble GFX | `trimble_gfx.zip` | `USB:/AgData/Prescriptions/` |
-| Ag Leader InCommand / Integra | `ag_leader.zip` | USB root |
-| DJI Agras drones | `dji_agras.zip` | `USB:/DJI/` |
-| XAG drones | `xag.zip` | `USB:/XAG/` |
-| Any ISOBUS / generic display | `universal.zip` | USB root |
-
-Each ZIP also contains `Basemap/orthomosaic.mbtiles` — load as an offline background layer in your display app.
-
-## Loading Prescriptions (Fleet Swarm Mode)
-
-When multiple spray drones are configured, OrthoSWIFT automatically partitions the field into contiguous, productivity-balanced operational zones with 100% field coverage. Each drone gets its own ready-to-load package. Boom sprayers and tractors receive standard full-field packages separately.
-
-1. Open `fleet_machines/fleet_partition_zones.kml` in Google Earth — each machine's zone is color-coded and labeled with the machine name and area.
-2. Each operator extracts **only their named ZIP** — e.g. `Drone_1_XAG.zip`, `Tractor_1_John_Deere.zip`.
-3. Extract to USB root and load as normal.
-4. GIS users: full partition GeoJSON and manifest are in `technical_gis/fleet/` for QGIS review.
-
-> **Safety:** Static zone boundaries do not replace coordinated launch timing, altitude separation, geofencing, or manufacturer traffic management protocols.
+The package may contain `DJI/Basemap/orthomosaic.mbtiles`; use it only where the DJI application supports manual offline-layer import.
 
 ## TargetRate — Check Which Mode Was Exported
 
@@ -101,9 +68,7 @@ Zone colours show relative vigor, not diagnosis. Whether high- or low-vigor area
 
 
 
-# ---------------------------------------------------------------------------
 # PDF generation
-# ---------------------------------------------------------------------------
 
 def generate_guide_pdf(out_path: str | Path, *, domain: str) -> Optional[Path]:
     """
@@ -133,45 +98,48 @@ def generate_guide_pdf(out_path: str | Path, *, domain: str) -> Optional[Path]:
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     try:
-        from reportlab.lib.pagesizes import A4
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib.units import mm
+        import re
+
         from reportlab.lib import colors
-        from reportlab.platypus import (
-            SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Preformatted
-        )
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+        from reportlab.lib.units import mm
         from reportlab.pdfbase import pdfmetrics
         from reportlab.pdfbase.ttfonts import TTFont
-        import re
+        from reportlab.platypus import (
+            Paragraph,
+            Preformatted,
+            SimpleDocTemplate,
+            Spacer,
+            Table,
+            TableStyle,
+        )
 
         # Use OrthoSWIFT brand fonts if bundled alongside this module
         plugin_dir = Path(__file__).parent.parent
-        _font_search = [plugin_dir, plugin_dir / "assets" / "fonts"]
         USE_SPACE_GROTESK = False
         USE_INTER = False
         for font_file, font_name, flag_attr in [
             ("SpaceGrotesk-Bold.ttf", "SpaceGrotesk", "USE_SPACE_GROTESK"),
             ("InterVariable.ttf",     "Inter",         "USE_INTER"),
         ]:
-            p = next((d / font_file for d in _font_search if (d / font_file).exists()), None)
-            if p:
+            p = plugin_dir / font_file
+            if p.exists():
                 try:
                     pdfmetrics.registerFont(TTFont(font_name, str(p)))
                     if flag_attr == "USE_SPACE_GROTESK":
                         USE_SPACE_GROTESK = True
                     else:
                         USE_INTER = True
-                except Exception:
-                    pass
+                except (OSError, ValueError) as exc:
+                    logger.debug("Could not register bundled PDF font %s: %s", p, exc)
 
         title_font = "SpaceGrotesk" if USE_SPACE_GROTESK else "Helvetica-Bold"
         body_font  = "Inter"        if USE_INTER         else "Helvetica"
 
         styles = getSampleStyleSheet()
 
-        # ------------------------------------------------------------------
         # Inline markdown helpers
-        # ------------------------------------------------------------------
         def _esc(text):
             """Escape XML special chars then apply inline markdown."""
             text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -187,9 +155,7 @@ def generate_guide_pdf(out_path: str | Path, *, domain: str) -> Optional[Path]:
         def _para(text, style):
             return Paragraph(_esc(text), style)
 
-        # ------------------------------------------------------------------
         # Named styles
-        # ------------------------------------------------------------------
         def _make_style(name, **kw):
             base = kw.pop("parent", styles["Normal"])
             return ParagraphStyle(name, parent=base, **kw)
@@ -218,9 +184,7 @@ def generate_guide_pdf(out_path: str | Path, *, domain: str) -> Optional[Path]:
                                     leftIndent=16, firstLineIndent=-10, spaceAfter=3),
         }
 
-        # ------------------------------------------------------------------
         # Parse lines → flowables
-        # ------------------------------------------------------------------
         story = []
         lines = source.splitlines()
         in_code = False
@@ -270,7 +234,6 @@ def generate_guide_pdf(out_path: str | Path, *, domain: str) -> Optional[Path]:
             line = lines[i]
             stripped = line.strip()
 
-            # ── Code block ──────────────────────────────────────────────
             if stripped.startswith("```"):
                 if in_code:
                     code_text = "\n".join(code_buf)
@@ -291,7 +254,6 @@ def generate_guide_pdf(out_path: str | Path, *, domain: str) -> Optional[Path]:
                 i += 1
                 continue
 
-            # ── Table row ────────────────────────────────────────────────
             if stripped.startswith("|"):
                 in_table = True
                 cells = [c.strip() for c in stripped.split("|")[1:-1]]
@@ -303,7 +265,6 @@ def generate_guide_pdf(out_path: str | Path, *, domain: str) -> Optional[Path]:
                 if in_table:
                     _flush_table()
 
-            # ── Heading ──────────────────────────────────────────────────
             if stripped.startswith("#"):
                 level = len(stripped) - len(stripped.lstrip("#"))
                 text  = stripped.lstrip("#").strip()
@@ -322,7 +283,6 @@ def generate_guide_pdf(out_path: str | Path, *, domain: str) -> Optional[Path]:
                 i += 1
                 continue
 
-            # ── Bullet (unordered) ───────────────────────────────────────
             ul = re.match(r'^(\s*)[-*]\s+(.*)$', line)
             if ul:
                 indent = len(ul.group(1))
@@ -332,7 +292,6 @@ def generate_guide_pdf(out_path: str | Path, *, domain: str) -> Optional[Path]:
                 i += 1
                 continue
 
-            # ── Numbered list ────────────────────────────────────────────
             ol = re.match(r'^(\s*)(\d+)\.\s+(.*)$', line)
             if ol:
                 indent = len(ol.group(1))
@@ -342,7 +301,6 @@ def generate_guide_pdf(out_path: str | Path, *, domain: str) -> Optional[Path]:
                 i += 1
                 continue
 
-            # ── Regular paragraph ────────────────────────────────────────
             if stripped:
                 story.append(_para(stripped, ST["body"]))
 
@@ -352,9 +310,7 @@ def generate_guide_pdf(out_path: str | Path, *, domain: str) -> Optional[Path]:
         if in_table:
             _flush_table()
 
-        # ------------------------------------------------------------------
         # Build document
-        # ------------------------------------------------------------------
         def _footer(canvas_obj, doc_obj):
             canvas_obj.saveState()
             canvas_obj.setFont("Helvetica-Oblique", 8)
@@ -382,12 +338,17 @@ def generate_guide_pdf(out_path: str | Path, *, domain: str) -> Optional[Path]:
         return None
 
 
-# ---------------------------------------------------------------------------
 # Public API — called from pipeline.py and analysis_worker.py
-# ---------------------------------------------------------------------------
 
 
 
 def export_guides(out_dir: str | Path) -> tuple[Optional[Path], Optional[Path]]:
-    """Machine setup reference is now embedded directly in the official report."""
+    """
+    Stub — setup_guide.pdf has been retired.
+
+    The Machine USB Loading Reference is now embedded directly in the official
+    Spray Report (report.py → build_agriculture_pdf). There is
+    no longer a separate setup guide deliverable.
+    """
+    logger.info("[guide] setup_guide.pdf generation skipped — USB reference is embedded in the main report.")
     return None, None

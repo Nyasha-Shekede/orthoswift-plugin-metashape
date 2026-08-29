@@ -1,6 +1,6 @@
 # OrthoSWIFT Plugin for Agisoft Metashape
 
-OrthoSWIFT turns a georeferenced multispectral orthomosaic into vegetation-index rasters, management zones, stress-hotspot review layers, controller prescription packages (John Deere, Case IH, Trimble, Ag Leader, New Holland, DJI Agras, XAG), and farmer-facing PDF deliverables directly inside Agisoft Metashape Professional.
+OrthoSWIFT turns a georeferenced multispectral orthomosaic into vegetation-index rasters, management zones, stress-hotspot review layers, DJI Agras prescription packages, and farmer-facing PDF deliverables directly inside Agisoft Metashape Professional.
 
 ## Status
 
@@ -122,14 +122,14 @@ Depending on the available spectral bands and quality-control gates, the results
 
 | Deliverable | Format | Purpose |
 | :--- | :--- | :--- |
-| **Fertilizer Zone Map** | Shapefile + Controller ZIPs (with offline MBTiles) | Drives variable-rate spreaders and sprayers (John Deere, Case IH, Trimble, Ag Leader, New Holland, DJI Agras, XAG). Includes full-resolution offline MBTiles basemap. |
-| **Targeted Spray Map** | Shapefile + Controller ZIPs (with offline MBTiles) | Triggers sprayer sections or drones over detected weed/stress patches. |
+| **Fertilizer Zone Map** | DJI Agras ZIP (with optional offline MBTiles) | Packages variable-rate zones for DJI Agras review and import. |
+| **Targeted Spray Map** | DJI Agras ZIP (with optional offline MBTiles) | Packages detected stress patches for DJI Agras spot-spray review. |
 | **Stress Hotspot Map** | GeoJSON + KML + CSV | Pinpoints lowest-performing field zones for targeted ground scouting and validation. |
 | **Spray Report** | PDF + PNG map | Ready-to-share spray report with zone maps, tank-mix quantities, and scouting targets. |
 | **Technical GIS & Audit** | GeoTIFF + CSV + JSON | Analytical vegetation indices (NDVI, NDRE, GLI, MSAVI2), crop mask QC, methodology audits, and warnings. |
-| **Universal Export** | DJI Agras, XAG, John Deere, Case IH, Trimble & more | Export to major spray drone and tractor formats per job. |
+| **DJI Agras Export** | DJI boundary shapefile + rate GeoTIFF | Creates the DJI-folder prescription package used by this plugin. |
 
-DJI Agras and XAG exports are structural/research-stage formats and require equipment profile verification prior to field application.
+DJI Agras exports are structural and require equipment and firmware verification before field application.
 
 ## Development
 

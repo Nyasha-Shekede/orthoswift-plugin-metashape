@@ -1,11 +1,18 @@
+import ast
 from pathlib import Path
 
 
 def test_version_consistency():
     root = Path(__file__).parents[1]
-    version_vars = {}
-    exec((root / "orthoswift" / "version.py").read_text(encoding="utf-8"), version_vars)
-    version = version_vars.get("__version__", "1.0.0")
+    version_tree = ast.parse(
+        (root / "orthoswift" / "version.py").read_text(encoding="utf-8")
+    )
+    assignment = next(
+        node for node in version_tree.body
+        if isinstance(node, ast.Assign)
+        and any(isinstance(target, ast.Name) and target.id == "__version__" for target in node.targets)
+    )
+    version = ast.literal_eval(assignment.value)
 
     pyproject_text = (root / "pyproject.toml").read_text(encoding="utf-8")
     assert f'version = "{version}"' in pyproject_text
